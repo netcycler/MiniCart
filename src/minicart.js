@@ -936,10 +936,12 @@ PAYPAL.apps = PAYPAL.apps || {};
 					if (level >= 15) {
 						subtotalEl.style.backgroundColor = 'transparent';
 
+						/*
 						// hide the cart if there's no total
 						if (subtotal === '0.00') {
 							minicart.reset();
 						}
+						*/
 
 						return;
 					}
