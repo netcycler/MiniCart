@@ -644,29 +644,31 @@ PAYPAL.apps = PAYPAL.apps || {};
 						// fail
 					}
 
-					// regenerate the form element indexes
-					var products = minicart.UI.cart.getElementsByTagName('li'),
-						products_len = products.length,
-						inputs,
-						inputs_len,
-						input,
-						matches,
-						i, j, k = 1;
+					if (minicart.UI.cart) {
+						// regenerate the form element indexes
+						var products = minicart.UI.cart.getElementsByTagName('li'),
+							products_len = products.length,
+							inputs,
+							inputs_len,
+							input,
+							matches,
+							i, j, k = 1;
 
-					for (i = 0 ; i < products_len; i++) {
-						inputs = products[i].getElementsByTagName('input');
-						inputs_len = inputs.length;
+						for (i = 0 ; i < products_len; i++) {
+							inputs = products[i].getElementsByTagName('input');
+							inputs_len = inputs.length;
 
-						for (j = 0; j < inputs_len; j++) {
-							input = inputs[j];
-							matches = /(.+)_[0-9]+$/.exec(input.name);
+							for (j = 0; j < inputs_len; j++) {
+								input = inputs[j];
+								matches = /(.+)_[0-9]+$/.exec(input.name);
 
-							if (matches && matches[1]) {
-								input.name = matches[1] + '_' + k;
+								if (matches && matches[1]) {
+									input.name = matches[1] + '_' + k;
+								}
 							}
-						}
 
-						k++;
+							k++;
+						}
 					}
 
 					if (typeof afterRemoveFromCart === 'function') {
@@ -716,6 +718,16 @@ PAYPAL.apps = PAYPAL.apps || {};
 		 */
 		minicart.UI = {};
 
+		minicart.noUIInit = function (userConfig) {
+			_parseUserConfig(userConfig);
+
+			var data = $.storage.load();
+			if (data) {
+				for (var i = 0; i < data.length; i++) {
+					minicart.products.push(new ProductNode(data[i], i));
+				}
+			}
+		}
 
 		/**
 		 * Renders the cart, creates the configuration and loads the data
@@ -857,6 +869,35 @@ PAYPAL.apps = PAYPAL.apps || {};
 			return success;
 		};
 
+		minicart.removeFromCart = function (item_number) {
+			var offset = 0,
+				product = null;
+
+			// find the product
+			for (; offset < this.products.length; offset++) {
+				if (this.products[offset].product.item_number === item_number) {
+					product = this.products[offset];
+					break;
+				}
+			}
+
+			if (!product) {
+				return false;
+			}
+
+			_removeProduct(product, offset);
+
+			// reset cart if no items left
+			var totalQuant = 0;
+			for (var i = 0; i < this.products.length; i++) {
+				totalQuant += this.products[i].product.quantity;
+			}
+			if (totalQuant === 0) {
+				this.reset();
+			}
+
+			return true;
+		};
 
 		/**
 		 * Returns a product from the Mini Cart's interal storage
@@ -900,6 +941,10 @@ PAYPAL.apps = PAYPAL.apps || {};
 		 * Updates the UI with the current subtotal and currency code
 		 */
 		minicart.updateSubtotal = function (silent) {
+			if (!minicart.UI.cart) {
+				return;
+			}
+
 			var ui = minicart.UI,
 				cartEl = ui.cart.elements,
 				subtotalEl = ui.subtotalAmount,
@@ -1265,7 +1310,7 @@ PAYPAL.apps = PAYPAL.apps || {};
 				if ((discount = this.getDiscount())) {
 					this.discountInput.value = discount;
 
-					this.discountNode.innerHTML  = '<br />';
+					this.discountNode.innerHTML = '<br />';
 					this.discountNode.innerHTML += config.strings.discount || 'Discount: ';
 					this.discountNode.innerHTML += $.util.formatCurrency(discount, this.settings.currency_code);
 				}
