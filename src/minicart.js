@@ -1368,7 +1368,7 @@ PAYPAL.apps = PAYPAL.apps || {};
 				return window.localStorage.setItem('test-support', 'test-support'),
 					window.localStorage.getItem('test-support'),
 					!0;
-			} catch () { return !1; }
+			} catch (e) { return !1; }
 		})()) {
 			return {
 
