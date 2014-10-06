@@ -1117,6 +1117,9 @@ PAYPAL.apps = PAYPAL.apps || {};
 			}
 		};
 
+		minicart.save = function () {
+			$.storage.save(minicart.products, config.cartDuration);
+		}
 
 		// Expose the object as public methods
 		return minicart;
