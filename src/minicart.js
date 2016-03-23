@@ -546,6 +546,11 @@ PAYPAL.apps = PAYPAL.apps || {};
 		 * @param data {object} The data for the product
 		 */
 		var _renderProduct = function (data) {
+			if (minicart.UI.itemList === undefined) {
+				// noUIInit
+				return true;
+			}
+
 			var ui = minicart.UI,
 				cartEl = ui.cart,
 				product = new ProductNode(data, minicart.UI.itemList.children.length + 1),
@@ -1003,6 +1008,10 @@ PAYPAL.apps = PAYPAL.apps || {};
 		 * @param e {event} The triggering event
 		 */
 		minicart.show = function (e) {
+			if (minicart.UI.cart === undefined) {
+				// noUIInit
+				return;
+			}
 			var from = parseInt(minicart.UI.cart.offsetTop, 10),
 				to = 0,
 				events = config.events,
